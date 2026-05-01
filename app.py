@@ -109,6 +109,12 @@ SECTOR_COLORS = {
     "Financial Services": "#795548",
 }
 
+def hex_to_rgba(hex_color, alpha=0.1):
+    """Convert a #RRGGBB hex string to a valid rgba() CSS string."""
+    hex_color = hex_color.lstrip("#")
+    r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
 def generate_sparkline(base, periods=30, volatility=0.015):
     prices = [base]
     for _ in range(periods - 1):
@@ -116,11 +122,12 @@ def generate_sparkline(base, periods=30, volatility=0.015):
     return prices
 
 def make_sparkline(data, color="#2ecc71"):
+    fill_color = hex_to_rgba(color, 0.15) if color.startswith("#") else color
     fig = go.Figure(go.Scatter(
         y=data, mode="lines",
         line=dict(color=color, width=2),
         fill="tozeroy",
-        fillcolor=color.replace(")", ",0.1)").replace("rgb", "rgba") if "rgb" in color else color + "1a"
+        fillcolor=fill_color
     ))
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -188,7 +195,7 @@ if page == "Dashboard":
         spark = generate_sparkline(idx["value"])
         with col:
             st.markdown(
-                f'<div class="metric-card">'  
+                f'<div class="metric-card">'
                 f'<div class="metric-label">{name} Share Index</div>'
                 f'<div class="metric-value">{idx["value"]:,.2f}</div>'
                 f'<div style="color:{clr};font-weight:600">{sign}{idx["change"]}%</div>'
